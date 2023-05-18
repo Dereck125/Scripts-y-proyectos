@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>  
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
+        <link rel="stylesheet" type="text/css" href="style.css">
+        <title>Super practica 8</title>
+      </head>
+
+<body>
+   <p>
+        <h1>Practica 8</h1>
+    </p>
+    <h2>Voltaje LDR</h2>
+  <p>
+    <span class="sensor">Voltaje:</span>
+    <span id="SENSOR_ID">%SENSOR%</span>
+    <sup class="units">V</sup>
+  </p>
+
+  <h2>Potenciometro</h2>
+<p>
+  <span class="pot">Potenciometro:</span>
+    <span id="POT_ID">%POTENCIOMETRO%</span>
+    <sup class="units">ohms</sup>
+  
+</p>
+
+  <p> 
+    <h2>PWM Led</h2>
+ 	<p><span id="textSliderValue">%SLIDERVALUE%</span></p>
+	<p><input type="range" onchange="updateSliderPWM(this)" id="pwmSlider" min="0" max="255" value="%SLIDERVALUE%" step="1" class="slider"></p>
+	<script>
+	function updateSliderPWM(element) {
+  		var sliderValue = document.getElementById("pwmSlider").value;
+  		document.getElementById("textSliderValue").innerHTML = sliderValue;
+  		console.log(sliderValue);
+  		var xhr = new XMLHttpRequest();
+  		xhr.open("GET", "/slider?value="+sliderValue, true);
+  		xhr.send();
+	}
+	</script>
+  </p>
+  <p>
+    <h2>LEDS</h2>
+  %BUTTONPLACEHOLDER%
+  <script>function toggleCheckbox(element) {
+      var xhr = new XMLHttpRequest();
+      if(element.checked){ xhr.open("GET", "/update?output="+element.id+"&state=1", true); }
+      else { xhr.open("GET", "/update?output="+element.id+"&state=0", true); }
+      xhr.send();
+    }
+  </script>
+  </p>
+</body>
+<script src="script.js"></script>
+</html>

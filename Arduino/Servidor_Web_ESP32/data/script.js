@@ -1,0 +1,23 @@
+setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("SENSOR_ID").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/sensor", true);
+    xhttp.send();
+  },
+  100);
+
+  setInterval(function () {
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function () {
+      if (this.readyState == 4 && this.status == 200) {
+        document.getElementById("POT_ID").innerHTML = this.responseText;
+      }
+    };
+    xhttp.open("GET", "/pot", true);
+    xhttp.send();
+  },
+  100);
