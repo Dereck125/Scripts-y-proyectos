@@ -1,0 +1,103 @@
+/*
+Universidad Nacional Autónoma de México
+Facultad de Ciencias
+Licenciatura en Ciencias de la Computación
+Seminario de Ciencias de la Computación A: Introducción al Internet de las Cosas
+
+Escrito por: M. en I. Valente Vázquez Velázquez
+Última modificación: 23-marzo-2023
+
+https://sites.google.com/ciencias.unam.mx/introduccion-iot-fc/inicio
+*/
+
+
+
+#include <pgmspace.h>
+ 
+#define SECRET
+#define THINGNAME "ESP32_al4zka"   //Nombre del dispositivo
+ 
+const char WIFI_SSID[] = "pcpuma";    //Nombre de red
+const char WIFI_PASSWORD[] = "mango2022";   //Contraseña de red
+//const char WIFI_SSID[] = "IncubotCISCO";    //Nombre de red
+//const char WIFI_PASSWORD[] = "MSP430G2";   //Contraseña de red
+const char AWS_IOT_ENDPOINT[] = "a1nkv4p2915pvs-ats.iot.us-east-2.amazonaws.com";   //Broker AWS
+
+
+// Amazon Root CA 1
+static const char AWS_CERT_CA[] PROGMEM = R"EOF(
+-----BEGIN CERTIFICATE-----
+MIIDQTCCAimgAwIBAgITBmyfz5m/jAo54vB4ikPmljZbyjANBgkqhkiG9w0BAQsF
+ADA5MQswCQYDVQQGEwJVUzEPMA0GA1UEChMGQW1hem9uMRkwFwYDVQQDExBBbWF6
+b24gUm9vdCBDQSAxMB4XDTE1MDUyNjAwMDAwMFoXDTM4MDExNzAwMDAwMFowOTEL
+MAkGA1UEBhMCVVMxDzANBgNVBAoTBkFtYXpvbjEZMBcGA1UEAxMQQW1hem9uIFJv
+b3QgQ0EgMTCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBALJ4gHHKeNXj
+ca9HgFB0fW7Y14h29Jlo91ghYPl0hAEvrAIthtOgQ3pOsqTQNroBvo3bSMgHFzZM
+9O6II8c+6zf1tRn4SWiw3te5djgdYZ6k/oI2peVKVuRF4fn9tBb6dNqcmzU5L/qw
+IFAGbHrQgLKm+a/sRxmPUDgH3KKHOVj4utWp+UhnMJbulHheb4mjUcAwhmahRWa6
+VOujw5H5SNz/0egwLX0tdHA114gk957EWW67c4cX8jJGKLhD+rcdqsq08p8kDi1L
+93FcXmn/6pUCyziKrlA4b9v7LWIbxcceVOF34GfID5yHI9Y/QCB/IIDEgEw+OyQm
+jgSubJrIqg0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNVHQ8BAf8EBAMC
+AYYwHQYDVR0OBBYEFIQYzIU07LwMlJQuCFmcx7IQTgoIMA0GCSqGSIb3DQEBCwUA
+A4IBAQCY8jdaQZChGsV2USggNiMOruYou6r4lK5IpDB/G/wkjUu0yKGX9rbxenDI
+U5PMCCjjmCXPI6T53iHTfIUJrU6adTrCC2qJeHZERxhlbI1Bjjt/msv0tadQ1wUs
+N+gDS63pYaACbvXy8MWy7Vu33PqUXHeeE6V/Uq2V8viTO96LXFvKWlJbYK8U90vv
+o/ufQJVtMVT8QtPHRh8jrdkPSHCa2XV4cdFyQzR1bldZwgJcJmApzyMZFo6IQ6XU
+5MsI+yMRQ+hDKXJioaldXgjUkK642M4UwtBV8ob2xJNDd2ZhwLnoQdeXeGADbkpy
+rqXRfboQnoZsG4q5WTP468SQvvG5
+-----END CERTIFICATE-----
+)EOF";
+ 
+// Device Certificate                                               //change this
+static const char AWS_CERT_CRT[] PROGMEM = R"KEY(
+-----BEGIN CERTIFICATE-----
+MIIDWjCCAkKgAwIBAgIVAPqb7kAiq6r6BVKD2ktiwDrMMRoeMA0GCSqGSIb3DQEB
+CwUAME0xSzBJBgNVBAsMQkFtYXpvbiBXZWIgU2VydmljZXMgTz1BbWF6b24uY29t
+IEluYy4gTD1TZWF0dGxlIFNUPVdhc2hpbmd0b24gQz1VUzAeFw0yMzA1MjYxNTUy
+NDBaFw00OTEyMzEyMzU5NTlaMB4xHDAaBgNVBAMME0FXUyBJb1QgQ2VydGlmaWNh
+dGUwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCtW9MdPce1wT/90lrq
+rfwxDSdoFstQKKPTCMHVMETHeWWOiYg/thbuFuyZX9HjlaPSPSITpINyQ0M/knt4
+YNuiDK3zumsIbq5aNpaeGt71g6+mTzixqdQAMUy9AWqmJFmkouwD7nBU4+NcdhdJ
+esn+zmY5FCtvTjJ9hAzVL37eKYJi+el0X3QDUZvnIlf7Z1pufkpO9o2+mx9MHD8v
+J8FfjklK0K9QBM02ZIUSLnXArbdo9PQM48RX2tLj3hz7xqGhmo8M7/Z0Xv0HV7XS
+XxJwcTOuadDCc/0zrUNpgx8kwCneNSvxPQOXPP5KkqQxhhIny4UoIncOd3Y8QReE
+goYNAgMBAAGjYDBeMB8GA1UdIwQYMBaAFGqE7sKsIdefbxRKDK2KKg8PMvZ6MB0G
+A1UdDgQWBBQr7I4/mE2ck1vrqnVJIt6TNBBxKTAMBgNVHRMBAf8EAjAAMA4GA1Ud
+DwEB/wQEAwIHgDANBgkqhkiG9w0BAQsFAAOCAQEAqNaols7xp+AWNNwRTfd6ltRk
+DbHZwHlGh08dn35JEISdvz5sLnOvqvGR27SuBYzgSdzC7pcAVXawkHurqilwACgE
+ivXZKvQ0KaSFGIq2DnZ90GQy/qcVSKrbpBhmQosWVbIMlvTtpgVC3pQKZ2dfH11d
+CFgz2u/LTfxdKQhDHQnAqAGhIl1CEWspcs9dg2uvO7Ch3wDCTGGB/4Ep62YjP4mD
+t8SptqxEsdgadGBVJrq8ynKPwSBX8ZboMmNKpn8hYA08NkRizBUbIHoOTiFDJikZ
+jbx/SFUGmJhzvt/rUlesJvXgULzpEOLEgRT+gy2cuG3X0F6waMIUHTseg3FNAA==
+-----END CERTIFICATE-----
+)KEY";
+// Device Private Key                                               //change this
+static const char AWS_CERT_PRIVATE[] PROGMEM = R"KEY(
+-----BEGIN RSA PRIVATE KEY-----
+MIIEpAIBAAKCAQEArVvTHT3HtcE//dJa6q38MQ0naBbLUCij0wjB1TBEx3lljomI
+P7YW7hbsmV/R45Wj0j0iE6SDckNDP5J7eGDbogyt87prCG6uWjaWnhre9YOvpk84
+sanUADFMvQFqpiRZpKLsA+5wVOPjXHYXSXrJ/s5mORQrb04yfYQM1S9+3imCYvnp
+dF90A1Gb5yJX+2dabn5KTvaNvpsfTBw/LyfBX45JStCvUATNNmSFEi51wK23aPT0
+DOPEV9rS494c+8ahoZqPDO/2dF79B1e10l8ScHEzrmnQwnP9M61DaYMfJMAp3jUr
+8T0Dlzz+SpKkMYYSJ8uFKCJ3Dnd2PEEXhIKGDQIDAQABAoIBAQCfv8ZDY/Ls4i/9
+ziJJsBp9eQmfOaIRM+IDTkaQFfLLfmq/dq0/SKTIsgdFLq9TcUmNKxiD0U3vtVv6
+8RkmTNsX8Wc6+cY39wZjy3nwKALda4QpVUeBMGZT5xo38V49y7FvrVKgLNEG6RlS
+0t+SrrwFOl2oq5V69CxCzbSlnybhwQi+9oZNZo5cYtDxrrKIrWjJxYqHRniYj2/f
+TvsqEKYusSTbWmp/7Mf4GK97Kq4ZT3aB8Nai6YKP3LhuL87uxerV3rPXwbs8SqP9
+d8wl9VTcjNxYQN+mZIIXV3BXSbqwuNOCCcd52Dqps5Hd8RFiXgSnnQbCuC2jg7GZ
+9+2TikIBAoGBAOZXsIOBXaer7TFj619SOBnry0lrdN2Iou7kJh0MrI+2Ysq20tlV
+YV/M+45GABWebrRACu16frFUcS8wYX641iHsbTtMS3CvMqqZ1iK7IozK/wj8fpJE
+mo70y9aSUoqEu8JjIaejGuHSuvnncVRtNqf55m8cVKPsMf6NBPAsMagxAoGBAMCr
+N73mVlu1OJ0FpBTgzNV0XJP6QdU/ICKkqxwpar7n+jShoI28r0NXKacN/qgCg9qh
+GatVUa/8MUbfTL860GCpkp1Hny+KexkMb0FfdlRl/V7ubegWZppzRIz13wOs/ZHt
+GWCL/Vo49+nLQsBfj5R6MHHqCEmBFUHXr2v3vGCdAoGAcyNMCUAGB4UKCFEw2zHm
+9xYFRIrhHMdq4kzKvGSUcTWyxi+Cz7488T0uVRyqeCP8pD8K90/uukdCWFsvsL9F
+0ikzJJvrbcU1Z0+EWVH/YC8sMlq8DfMa6vB0X6o+dh0JGY6hyQDftBe4/Kfy30fE
+NUzWIZ4gtNug1eO5nzAIFlECgYAxHDOEKy8+Bw5cL/DoBXkQu61RZsvbEFEfo3ue
+HQyBht3nBn/HQR4nexM56r5LkwCK/N9vJbtBsXXaC9cjM1mkGfUuM/BmjNTdyKaf
+MjcWQjz4Mqw/KV6T5efGSnHDHRgxVw9N5cD5e2Xt6QqlwHX3scGhd7cPDWEevFyR
+l78jnQKBgQC9gPeIHwKw58r2Nr3WEPvDhm6bnwOAjVt4Z2a7lD7Y9Y6WzkZWEVFv
+STBUIiJ3BAJaln7NGdvJ11c7YoYDRWEZ6i7dBO5yRi7Wla2LHyUjWfP2DBd3gPVU
+xJTSb4S7Q651SqAwDpIGsPTYXEikpMMVQ+oRixxW6NtezyBiLAnspQ==
+-----END RSA PRIVATE KEY-----
+)KEY";
